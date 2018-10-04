@@ -5,9 +5,11 @@
           <img src="../assets/logo.png">
           <div class="head-nav">
             <ul class="nav-list">
-              <li @click="logClick">登录</li>
+              <li>{{ username }}</li>
+              <li @click="logClick" v-if="username === ''">登录</li>
               <li class="nav-pile">|</li>
-              <li @click="regClick">注册</li>
+              <li @click="quit" v-if="username !== ''">退出</li>
+              <li @click="regClick" v-if="username === ''">注册</li>
               <li class="nav-pile">|</li>
               <li @click="aboutClick">关于</li>
             </ul>
@@ -23,7 +25,7 @@
         <p>© 2018 tomtiddler MIT</p>
       </div>
       <my-dialog :is-show="isShowLogDialog" @on-close="closeDialog('isShowLogDialog')">
-      <log-form></log-form>
+        <log-form @has-log="onSuccessLog"></log-form>
       </my-dialog>
       <my-dialog :is-show="isShowRegDialog" @on-close="closeDialog('isShowRegDialog')">
         <reg-form></reg-form>
@@ -50,7 +52,8 @@ export default {
     return {
       isShowLogDialog: false,
       isShowRegDialog: false,
-      isShowAboutDialog: false
+      isShowAboutDialog: false,
+      username: ''
     }
   },
   methods: {
@@ -65,6 +68,14 @@ export default {
     },
     closeDialog (attr) {
       this[attr] = false
+    },
+    onSuccessLog (data) {
+      console.log(data)
+      this.closeDialog('isShowLogDialog')
+      this.username = data.username
+    },
+    quit () {
+      this.username = ''
     }
   }
 }
