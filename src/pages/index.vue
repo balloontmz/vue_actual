@@ -65,7 +65,7 @@ export default {
   methods: {
     // 以下方法用于测试
     doSomethingChange () {
-      console.log('doSomethingChange run')
+      // console.log('doSomethingChange run')
     }
   },
   data () {

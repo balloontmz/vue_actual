@@ -2,7 +2,9 @@
     <div>
       <div class="app-head">
         <div class="app-head-inner">
-          <img src="../assets/logo.png">
+          <router-link :to="{path: '/'}">
+            <img src="../assets/logo.png">
+          </router-link>
           <div class="head-nav">
             <ul class="nav-list">
               <li>{{ username }}</li>
@@ -31,7 +33,7 @@
         <reg-form></reg-form>
       </my-dialog>
       <my-dialog :is-show="isShowAboutDialog" @on-close="closeDialog('isShowAboutDialog')">
-        <p>other hello</p>
+        <p>历史资料、科学实验、检验、统计等所获得的和用于科学研究、技术设计、查证、决策等的数值加以统计为解决方案做前期准备。</p>
       </my-dialog>
     </div>
 </template>

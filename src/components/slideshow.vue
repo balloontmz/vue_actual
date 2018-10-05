@@ -2,6 +2,7 @@
   <div class="slide-show" @mouseover="clearInv" @mouseout="runInv">
     <div class="slide-img">
       <a :href="slides[nowIndex].href">
+        <!--此处的href用于路由跳转-->
         <transition name="slide-trans">
           <img v-if="isShow" :src="slides[nowIndex].src">
         </transition>
