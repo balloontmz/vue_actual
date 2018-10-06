@@ -10,7 +10,7 @@
           购买数量：
         </div>
         <div class="sales-board-line-right">
-          <counter></counter>
+          <counter @on-change="onParamChange('buyNum', $event)"></counter>
         </div>
       </div>
       <div class="sales-board-line">
@@ -18,7 +18,7 @@
           产品类型：
         </div>
         <div class="sales-board-line-right">
-          <chooser :selections="buyTypes"></chooser>
+          <chooser :selections="buyTypes" @on-change="onParamChange('buyType', $event)"></chooser>
         </div>
       </div>
       <div class="sales-board-line">
@@ -26,7 +26,7 @@
           有效时间：
         </div>
         <div class="sales-board-line-right">
-          <chooser :selections="periodList"></chooser>
+          <chooser :selections="periodList" @on-change="onParamChange('period', $event)"></chooser>
         </div>
       </div>
       <div class="sales-board-line">
@@ -34,7 +34,7 @@
           产品版本：
         </div>
         <div class="sales-board-line-right">
-          <v-selection :selections="versionList"></v-selection>
+          <multiplay-chooser :selections="versionList" @on-change="onParamChange('versions', $event)"></multiplay-chooser>
         </div>
       </div>
       <div class="sales-board-line">
@@ -83,10 +83,12 @@
 import VSelection from '../../components/base/selection'
 import Counter from '../../components/base/counter'
 import Chooser from '../../components/base/chooser'
+import multiplayChooser from '../../components/base/multiplyChooser'
+import _ from 'lodash'
 
 export default {
   components: {
-    VSelection, Counter, Chooser
+    VSelection, Counter, Chooser, multiplayChooser
   },
   data () {
     return {
@@ -143,6 +145,41 @@ export default {
       isShowCheckOrder: false,
       isShowErrDialog: false
     }
+  },
+  methods: {
+    onParamChange (attr, val) {
+      this[attr] = val
+      this.getPrice()
+    },
+    getPrice () {
+      let buyVersionsArray = _.map(this.versions, (item) => {
+        return item.value
+      })
+      let reqParams = {
+        buyNumber: this.buyNum,
+        buyType: this.buyType.value,
+        period: this.period.value,
+        version: buyVersionsArray.join(',')
+      }
+      /* this.$http.post('/api/getPrice', reqParams).then((res) => {
+        this.price = res.data.amount
+        console.log(res)
+      }) */
+      this.$http.get('/api/getPrice')
+        .then((res) => {
+          this.price = res.data.amount
+          // 如果返回的是字符串 需要用到JSON.parse函数，此处返回的是对象
+          // console.log(res.data.amount)
+        })
+    }
+  },
+  mounted () {
+    // console.log('running')
+    this.buyNum = 1
+    this.buyType = this.buyTypes[0]
+    this.versions = [this.versionList[0]]
+    this.period = this.periodList[0]
+    this.getPrice()
   }
 }
 </script>
