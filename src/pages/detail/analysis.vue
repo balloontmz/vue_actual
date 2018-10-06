@@ -48,7 +48,7 @@
       <div class="sales-board-line">
         <div class="sales-board-line-left">&nbsp;</div>
         <div class="sales-board-line-right">
-          <div class="button">
+          <div class="button" @click="showPayDialog">
             立即购买
           </div>
         </div>
@@ -76,6 +76,39 @@
         <li>用户所在地理区域分布状况等</li>
       </ul>
     </div>
+    <my-dialog :is-show="isShowPayDialog" @on-close="hidePayDialog">
+      <table class="buy-dialog-table">
+        <tr>
+          <th>购买数量</th>
+          <th>产品类型</th>
+          <th>有效时间</th>
+          <th>产品版本</th>
+          <th>总价</th>
+        </tr>
+        <tr>
+          <td>{{ buyNum }}</td>
+          <td>{{ buyType.label }}</td>
+          <td>{{ period.label }}</td>
+          <td>
+            <span v-for="item in versions" :key="item.value">{{ item.label }}</span>
+          </td>
+          <td>{{ price }}</td>
+        </tr>
+      </table>
+      <h3 class="buy-dialog-title">请选择银行</h3>
+      <bank-chooser @on-change="onChangeBanks"></bank-chooser>
+      <div class="button buy-dialog-btn" @click="confirmBuy">
+        确认购买
+      </div>
+    </my-dialog>
+    <my-dialog :is-show="isShowErrDialog" @on-close="hideErrDialog">
+      支付失败！
+    </my-dialog>
+    <check-order
+      :is-show-check-dialog="isShowCheckOrder"
+      :order-id="orderId"
+      @on-close-check-dialog="hideCheckOrder"
+    ></check-order>
   </div>
 </template>
 
@@ -83,12 +116,15 @@
 import VSelection from '../../components/base/selection'
 import Counter from '../../components/base/counter'
 import Chooser from '../../components/base/chooser'
-import multiplayChooser from '../../components/base/multiplyChooser'
+import MultiplayChooser from '../../components/base/multiplyChooser'
+import MyDialog from '../../components/base/dialog'
+import BankChooser from '../../components/bankChooser'
+import CheckOrder from '../../components/checkOrder'
 import _ from 'lodash'
 
 export default {
   components: {
-    VSelection, Counter, Chooser, multiplayChooser
+    VSelection, Counter, Chooser, MultiplayChooser, MyDialog, BankChooser, CheckOrder
   },
   data () {
     return {
@@ -170,6 +206,44 @@ export default {
           this.price = res.data.amount
           // 如果返回的是字符串 需要用到JSON.parse函数，此处返回的是对象
           // console.log(res.data.amount)
+        })
+    },
+    showPayDialog () {
+      this.isShowPayDialog = true
+    },
+    hidePayDialog () {
+      this.isShowPayDialog = false
+    },
+    onChangeBanks (bankObj) {
+      this.bankId = bankObj.id
+      // console.log(this.bankId)  // 测试回传数据是否成功
+    },
+    hideErrDialog () {
+      this.isShowErrDialog = false
+    },
+    hideCheckOrder () {
+      this.isShowCheckOrder = false
+    },
+    confirmBuy () {
+      let buyVersionsArray = _.map(this.versions, (item) => {
+        return item.value
+      })
+      let reqParams = {
+        buyNumber: this.buyNum,
+        buyType: this.buyType.value,
+        period: this.period.value,
+        version: buyVersionsArray.join(','),
+        bankId: this.bankId
+      }
+      this.$http.get('/api/createOrder', reqParams)
+        .then((res) => {
+          this.orderId = res.data.orderId
+          this.isShowPayDialog = false
+          this.isShowCheckOrder = true
+        }, (err) => {
+          console.log(err)
+          this.isShowPayDialog = false
+          this.isShowErrDialog = true
         })
     }
   },
